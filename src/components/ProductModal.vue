@@ -11,8 +11,8 @@
       <div class="img-upload-prod">
         <VaFileUpload
           v-model="imageFile"
+          file-types="jpg,png"
           type="gallery"
-          uploadButtonText="上傳圖片"
           @update:model-value="limitedOneFile"
         >
           <VaButton class="upload-btn" :rounded="false">
