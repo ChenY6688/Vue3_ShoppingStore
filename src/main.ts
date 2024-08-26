@@ -20,5 +20,11 @@ app.use(router)
 app.use(BootstrapIconsPlugin)
 app.use(pinia)
 app.use(axiosPlugin)
-app.use(createVuestic())
+app.use(createVuestic({
+  config: {
+    i18n: {
+      fileTypeIncorrect: '僅接受 .jpg 和 .png 類型的檔案',
+    }
+  }
+}))
 app.mount('#app')
