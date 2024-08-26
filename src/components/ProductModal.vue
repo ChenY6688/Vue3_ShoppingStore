@@ -1,37 +1,52 @@
 <template>
-  <VaModal
-    class="modal-crud"
-    :model-value="modelValue"
-    :title="title"
-    size="small"
-    @ok="handleOk"
-    @cancel="resetModalData"
-  >
-    <div class="img-upload-prod">
-      <VaFileUpload
-        v-model="imageFile"
-        type="gallery"
-        uploadButtonText="上傳圖片"
-        @update:model-value="limitedOneFile"
-      >
-        <VaButton class="upload-btn" :rounded="false">
-          上傳圖片
-        </VaButton>
-      </VaFileUpload>
-      <div class="img-container" v-if="item.id && imageFile.length === 0">
-        <div class="box">
-          <img :src="item.image" />
+  <VaForm ref="formRef">
+    <VaModal
+      class="modal-crud"
+      :model-value="modelValue"
+      :title="title"
+      size="small"
+      @ok="handleOk"
+      @cancel="resetModalData"
+    >
+      <div class="img-upload-prod">
+        <VaFileUpload
+          v-model="imageFile"
+          type="gallery"
+          uploadButtonText="上傳圖片"
+          @update:model-value="limitedOneFile"
+        >
+          <VaButton class="upload-btn" :rounded="false">
+            上傳圖片
+          </VaButton>
+        </VaFileUpload>
+        <div class="img-container" v-if="item.id && imageFile.length === 0">
+          <div class="box">
+            <img :src="item.image" />
+          </div>
         </div>
       </div>
-    </div>
-    <VaInput v-model="item.title" class="input-spacing" label="商品介紹" />
-    <VaInput v-model="item.price" class="input-spacing" label="價格" />
-  </VaModal>
+      <VaInput 
+        v-model="item.title" 
+        :rules="[(v: string) => (v.trim().length > 0) || '請輸入商品介紹']"
+        class="input-spacing" 
+        label="商品介紹">
+      </VaInput>
+      <VaInput 
+        v-model="item.price" 
+        :rules="[(v: number) => v > 0 || '需為大於0的正整數']"
+        class="input-spacing" 
+        label="價格">
+      </VaInput>
+    </VaModal>
+  </VaForm>
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, defineEmits, watchEffect } from 'vue';
+import { ref, defineProps, defineEmits, watchEffect, vShow } from 'vue';
 import { type ProductInter } from '@/types';
+import { useForm } from 'vuestic-ui';
+
+const { isValid, validate } = useForm('formRef')
 
 const props = defineProps<{
   modelValue: boolean;
@@ -57,8 +72,12 @@ const limitedOneFile = () => {
 };
 
 const handleOk = () => {
-  emits('save', { item: item.value, imageFile: imageFile.value, type: props.type });
-  resetModalData()
+  if(item.value.id === '' &&imageFile.value.length === 0){
+    alert('請上傳圖片')
+  } else if (validate()) {
+    emits('save', { item: item.value, imageFile: imageFile.value, type: props.type });
+    resetModalData()
+  }
 };
 
 const resetModalData = () => {
