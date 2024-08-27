@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, defineEmits, watchEffect, vShow } from 'vue';
+import { ref, defineProps, defineEmits, watchEffect } from 'vue';
 import { type ProductInter } from '@/types';
 import { useForm } from 'vuestic-ui';
 
