@@ -32,94 +32,106 @@
     @cancel="handleCancel"
     @save="handleSave"
   />
+
+  <Pagination
+    :model-value="pageState.currentPage"
+    :itemsPerPage="pageState.itemsPerPage"
+    :totalCount="productList.length"
+    @update:currentPage="changePage"
+  />
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { nanoid } from 'nanoid';
-import Swal from "sweetalert2";
-import ProductModal from '@/components/ProductModal.vue';
-import useProduct from '@/hooks/useProduct';
-import { type ProductInter, type SaveDataParams } from '@/types';
+  import { ref, watch } from 'vue';
+  import { nanoid } from 'nanoid';
+  import Swal from "sweetalert2";
+  import ProductModal from '@/components/ProductModal.vue';
+  import Pagination from '@/components/Pagination.vue';
+  import useProduct from '@/hooks/useProduct';
+  import { type ProductInter, type SaveDataParams } from '@/types';
 
-const { productList } = useProduct();
+  const { productList, paginatedProducts, pageState, changePage } = useProduct();
 
-const items = ref<ProductInter[]>(productList);
-const createdItem: ProductInter = {image: '', title: '', price: 0, id: '', num: 1};
-const editedItem = ref<ProductInter | null>(null);
-const addNewItemModal = ref(false);
+  const items = ref<ProductInter[]>(paginatedProducts.value);
+  const createdItem: ProductInter = {image: '', title: '', price: 0, id: '', num: 1};
+  const editedItem = ref<ProductInter | null>(null);
+  const addNewItemModal = ref(false);
 
-const columns = [
-  // { key: 'id', label: 'ID', sortable: true, width: 40 },
-  { key: 'image', label: '商品圖', width: 90 },
-  { key: 'title', label: '商品介紹', width: 300 },
-  { key: 'price', label: '價格', width: 40 },
-  { key: 'actions', label: '動作', width: 40 },
-];
-
-const handleCancel = (type:string) => {
-  if(type === 'editItem'){
-    editedItem.value = null;
-  }else if(type === 'addItem'){
-    addNewItemModal.value = !addNewItemModal.value
-  };
-}
-  
-const handleSave = ({ item, imageFile, type }: SaveDataParams) => {
-  const saveData = () => {
-    if (type === 'addItem') {
-      item.id = nanoid();
-      item.num = 1;
-      items.value = [...items.value, { ...item }];
-    } else if (type === 'editItem') {
-      const index = items.value.findIndex(i => i.id === item.id);
-      if (index !== -1) {
-        items.value[index] = { ...item };
-      }
-    }
-    localStorage.setItem('productList', JSON.stringify(items.value));
-  };
-
-  if (imageFile.length > 0) {
-    const reader = new FileReader();
-    if (imageFile[0] instanceof File) {
-      reader.readAsDataURL(imageFile[0]);
-    } else {
-      item.image = imageFile[0];
-      saveData();
-    }
-    reader.onload = (e) => {
-      const base64Image = e.target!.result as string;
-      item.image = base64Image;
-      saveData();
-    };
-  } else {
-    saveData();
-  }
-};
-
-const editItemByIndex = (index: number) => {
-  editedItem.value = { ...items.value[index] };
-};
-
-const deleteItemByIndex = async (id: number) => {
-  const item = items.value[id];
-  const { isConfirmed } = await Swal.fire({
-    icon :"warning",
-    title: "刪除商品",
-    html: item.title,
-    confirmButtonColor: "#84bd00",
-    cancelButtonColor: "#646464",
-    showCancelButton: true,
-    reverseButtons: true,
-    confirmButtonText: "確定",
-    cancelButtonText: "取消",
+  watch(() => paginatedProducts.value, (paginatedProducts) => {
+    items.value = paginatedProducts;
   });
-  if (isConfirmed) {
-    items.value = [...items.value.slice(0, id), ...items.value.slice(id + 1)];
-    localStorage.setItem('productList', JSON.stringify(items.value));
+
+  const columns = [
+    // { key: 'id', label: 'ID', sortable: true, width: 40 },
+    { key: 'image', label: '商品圖', width: 90 },
+    { key: 'title', label: '商品介紹', width: 300 },
+    { key: 'price', label: '價格', width: 40 },
+    { key: 'actions', label: '動作', width: 40 },
+  ];
+
+  const handleCancel = (type:string) => {
+    if(type === 'editItem'){
+      editedItem.value = null;
+    }else if(type === 'addItem'){
+      addNewItemModal.value = !addNewItemModal.value
+    };
+  }
+    
+  const handleSave = ({ item, imageFile, type }: SaveDataParams) => {
+    const saveData = () => {
+      if (type === 'addItem') {
+        item.id = nanoid();
+        item.num = 1;
+        items.value = [...items.value, { ...item }];
+      } else if (type === 'editItem') {
+        const index = items.value.findIndex(i => i.id === item.id);
+        if (index !== -1) {
+          items.value[index] = { ...item };
+        }
+      }
+      localStorage.setItem('productList', JSON.stringify(items.value));
+    };
+
+    if (imageFile.length > 0) {
+      const reader = new FileReader();
+      if (imageFile[0] instanceof File) {
+        reader.readAsDataURL(imageFile[0]);
+      } else {
+        item.image = imageFile[0];
+        saveData();
+      }
+      reader.onload = (e) => {
+        const base64Image = e.target!.result as string;
+        item.image = base64Image;
+        saveData();
+      };
+    } else {
+      saveData();
+    }
   };
-}
+
+  const editItemByIndex = (index: number) => {
+    editedItem.value = { ...items.value[index] };
+  };
+
+  const deleteItemByIndex = async (id: number) => {
+    const item = items.value[id];
+    const { isConfirmed } = await Swal.fire({
+      icon :"warning",
+      title: "刪除商品",
+      html: item.title,
+      confirmButtonColor: "#84bd00",
+      cancelButtonColor: "#646464",
+      showCancelButton: true,
+      reverseButtons: true,
+      confirmButtonText: "確定",
+      cancelButtonText: "取消",
+    });
+    if (isConfirmed) {
+      items.value = [...items.value.slice(0, id), ...items.value.slice(id + 1)];
+      localStorage.setItem('productList', JSON.stringify(items.value));
+    };
+  }
 
 </script>
 

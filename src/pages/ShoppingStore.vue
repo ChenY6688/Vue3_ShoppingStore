@@ -38,12 +38,20 @@
     <h2>購物車</h2>
     <SideCart :cartItem="cartStore.cartItem" :currency="currency" @removeItem="removeItem" />
   </div>
+
+  <Pagination
+    :model-value="pageState.currentPage"
+    :itemsPerPage="pageState.itemsPerPage"
+    :totalCount="productList.length"
+    @update:currentPage="changePage"
+  />
 </template>
 
 <script lang="ts" setup name="ShoppingStore">
   import { ref, watch } from 'vue';
   import NumberButton from '@/components/NumberButton.vue';
   import SideCart from '@/components/SideCart.vue';
+  import Pagination from '@/components/Pagination.vue';
   import useProduct from '@/hooks/useProduct';
   import useCart from '@/hooks/useCart';  
   import useRates from '@/hooks/useRates';
@@ -51,15 +59,19 @@
   import { type ProductInter } from '@/types';
 
   const cartStore = useCartStore();
-  const { productList } = useProduct();
+  const { productList, paginatedProducts, pageState, changePage } = useProduct();
   const { conversionRates, selectedCurrency } = useRates();
   const { isCartOpen, addToCart, removeItem } = useCart();
   
-  const products = ref<ProductInter[]>(productList);
+  const products = ref<ProductInter[]>(paginatedProducts.value);
   const currency = ref('USD');
 
   watch(selectedCurrency,(newRate) => {
     currency.value = newRate;
+  });
+
+  watch(() => paginatedProducts.value, (paginatedProducts) => {
+    products.value = paginatedProducts;
   });
 
   const priceOnRate = (price:number) => {
