@@ -1,4 +1,4 @@
-import { reactive, onMounted, inject } from 'vue';
+import { reactive, onMounted, inject, computed } from 'vue';
 import { type ProductInter } from '@/types';
 import type { AxiosInstance } from 'axios';
 
@@ -9,6 +9,20 @@ export default function () {
 
   const localStorageData = localStorage.getItem('productList');
   const productList = localStorageData ? JSON.parse(localStorageData) : reactive<ProductInter[]>([]);
+  const pageState = reactive({
+    currentPage: 1,
+    itemsPerPage: 5,
+  });
+
+  const paginatedProducts = computed(() => {
+    const start = (pageState.currentPage - 1) * pageState.itemsPerPage;
+    const end = start + pageState.itemsPerPage;
+    return productList.slice(start, end);
+  });
+
+  const changePage = (page: number) => {
+    pageState.currentPage = page;
+  };
 
   const getProduct = async () => {
     if(!localStorageData){
@@ -38,5 +52,8 @@ export default function () {
   return {
     // use in ShoppingStore, ProductManage
     productList,
+    pageState,
+    paginatedProducts,
+    changePage,
   }
 }
