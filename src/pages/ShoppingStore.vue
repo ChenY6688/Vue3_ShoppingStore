@@ -13,7 +13,7 @@
         <img class="product-img" :src="product.image" alt="">
         <div class="product-info">
           <h3>{{ product.title }}</h3>
-          <p style="margin-top: 0.3rem;">{{ currency }}${{ priceOnRate(product.price) }}</p>
+          <p style="margin-top: 0.3rem;">{{ currency }}${{ product.price }}</p>
         </div>
       </div>
       <div class="product-actions">
@@ -66,18 +66,18 @@
   const products = ref<ProductInter[]>(paginatedProducts.value);
   const currency = ref('USD');
 
-  watch(selectedCurrency,(newRate) => {
-    currency.value = newRate;
+  watch(selectedCurrency, (newCurrency) => {
+    currency.value = newCurrency;
+    
+    products.value = paginatedProducts.value.map(product => ({
+      ...product,
+      price: Math.round(product.price * conversionRates.value[newCurrency])
+    }));
   });
 
   watch(() => paginatedProducts.value, (paginatedProducts) => {
     products.value = paginatedProducts;
   });
-
-  const priceOnRate = (price:number) => {
-      return Math.round(price * conversionRates.value[currency.value]);
-  };
-
 </script>
 
 <style scoped>
@@ -88,7 +88,6 @@
 .product-area {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 4rem;
   background-color: #ffffff;
 }
 

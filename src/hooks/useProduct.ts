@@ -9,9 +9,11 @@ export default function () {
 
   const localStorageData = localStorage.getItem('productList');
   const productList = localStorageData ? JSON.parse(localStorageData) : reactive<ProductInter[]>([]);
+
+  /* -------------------for Pagination------------------ */
   const pageState = reactive({
     currentPage: 1,
-    itemsPerPage: 5,
+    itemsPerPage: 6,
   });
 
   const paginatedProducts = computed(() => {
@@ -23,6 +25,7 @@ export default function () {
   const changePage = (page: number) => {
     pageState.currentPage = page;
   };
+  /* --------------------------------------------------- */
 
   const getProduct = async () => {
     if(!localStorageData){

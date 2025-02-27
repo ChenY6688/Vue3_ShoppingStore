@@ -1,7 +1,7 @@
 <template>
   <VaPagination
     :model-value="props.modelValue"
-    class="mb-3 justify-center sm:justify-start"
+    class="mt-3 justify-center sm:justify-start"
     @update:model-value="updateCurrentPage"
     :pages="pages"
     input

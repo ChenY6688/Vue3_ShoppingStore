@@ -1,44 +1,46 @@
 <template>
-  <div class="button-container">
-    <VaButton @click="addNewItemModal = !addNewItemModal">
-      新增商品
-    </VaButton>
+  <div class="container">
+    <div class="search-and-add">
+      <SearchInput/>
+      <VaButton @click="addNewItemModal = !addNewItemModal">
+        新增商品
+      </VaButton>
+    </div>
+    <VaDataTable class="table-crud" :items="items" :columns="columns" striped>
+      <template #cell(image)="{ value }">
+        <img :src="value" width="80" alt="">
+      </template>
+      <template #cell(actions)="{ rowIndex }">
+        <VaButton preset="plain" icon="edit" @click="editItemByIndex(rowIndex)" />
+        <VaButton preset="plain" icon="delete" class="ml-3" @click="deleteItemByIndex(rowIndex)" />
+      </template>
+    </VaDataTable>
+
+    <ProductModal
+      :model-value="!!editedItem"
+      :item="editedItem || createdItem"
+      title="編輯商品"
+      type="editItem"
+      @cancel="handleCancel"
+      @save="handleSave"
+    />
+
+    <ProductModal
+      :model-value="addNewItemModal"
+      :item="createdItem"
+      title="新增商品"
+      type="addItem"
+      @cancel="handleCancel"
+      @save="handleSave"
+    />
+
+    <Pagination
+      :model-value="pageState.currentPage"
+      :itemsPerPage="pageState.itemsPerPage"
+      :totalCount="productList.length"
+      @update:currentPage="changePage"
+    />
   </div>
-  <VaDataTable class="table-crud" :items="items" :columns="columns" striped>
-    
-    <template #cell(image)="{ value }">
-      <img :src="value" width="80" alt="">
-    </template>
-    <template #cell(actions)="{ rowIndex }">
-      <VaButton preset="plain" icon="edit" @click="editItemByIndex(rowIndex)" />
-      <VaButton preset="plain" icon="delete" class="ml-3" @click="deleteItemByIndex(rowIndex)" />
-    </template>
-  </VaDataTable>
-
-  <ProductModal
-    :model-value="!!editedItem"
-    :item="editedItem || createdItem"
-    title="編輯商品"
-    type="editItem"
-    @cancel="handleCancel"
-    @save="handleSave"
-  />
-
-  <ProductModal
-    :model-value="addNewItemModal"
-    :item="createdItem"
-    title="新增商品"
-    type="addItem"
-    @cancel="handleCancel"
-    @save="handleSave"
-  />
-
-  <Pagination
-    :model-value="pageState.currentPage"
-    :itemsPerPage="pageState.itemsPerPage"
-    :totalCount="productList.length"
-    @update:currentPage="changePage"
-  />
 </template>
 
 <script lang="ts" setup>
@@ -47,6 +49,7 @@
   import Swal from "sweetalert2";
   import ProductModal from '@/components/ProductModal.vue';
   import Pagination from '@/components/Pagination.vue';
+  import SearchInput from '@/components/SearchInput.vue';
   import useProduct from '@/hooks/useProduct';
   import { type ProductInter, type SaveDataParams } from '@/types';
 
@@ -76,7 +79,7 @@
       addNewItemModal.value = !addNewItemModal.value
     };
   }
-    
+
   const handleSave = ({ item, imageFile, type }: SaveDataParams) => {
     const saveData = () => {
       if (type === 'addItem') {
@@ -136,11 +139,19 @@
 </script>
 
 <style scoped>
-.button-container {
+.container {
   display: flex;
-  justify-content: flex-end; /* 將按鈕靠右 */
-  margin-bottom: 16px; /* 與表格保持一定距離 */
+  flex-direction: column;
+  margin-bottom: 16px;
 }
+
+.search-and-add {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .table-crud {
   --va-form-element-default-width: 0;
 
